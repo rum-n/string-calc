@@ -1,0 +1,62 @@
+<div class="login-wrapper">
+  <div class="login">
+    <div class="login-form">
+      <div class="logo">String Calculator</div>
+      <h2>Login to your account</h2>
+      <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+        <div class="login-input">
+          <label for="username"> Username </label>
+          <input
+            id="username"
+            type="text"
+            formControlName="username"
+            [(ngModel)]="username"
+          />
+          <span
+            class="text-alert"
+            *ngIf="
+              (loginForm.controls['username'].touched) &&
+              loginForm.controls['username'].errors?.['required']
+            "
+          >
+            Username is required
+          </span>
+        </div>
+
+        <div class="login-input">
+          <label for="password"> Password </label>
+          <input
+            id="password"
+            type="password"
+            formControlName="password"
+            [(ngModel)]="password"
+          />
+          <span
+            class="text-alert"
+            *ngIf="
+            (loginForm.controls['password'].touched) &&
+            loginForm.controls['password'].errors?.['required']
+          "
+          >
+            Password is required
+          </span>
+        </div>
+        <div class="button-wrapper">
+          <button
+            [disabled]="!username || !password"
+            class="login-button"
+            type="submit"
+          >
+            Login
+          </button>
+        </div>
+        <span class="text-alert" *ngIf="wrongCredentials">
+          Wrong username or password
+        </span>
+      </form>
+    </div>
+  </div>
+  <div class="bg-image">
+    <img class="calc-image" src="../../assets/img/calc-bg.jpeg" />
+  </div>
+</div>
