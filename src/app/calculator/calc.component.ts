@@ -8,10 +8,7 @@ import { Router } from '@angular/router';
   styleUrls: ['./calc.component.scss'],
 })
 export class CalculatorComponent implements OnInit {
-  queryHistory: any[] = [
-    { input: '21+4', result: 25 },
-    { input: '33+4', result: 37 },
-  ];
+  queryHistory: any[] = [];
   historyLimit = 10;
   inputForm: FormGroup;
   input = '';
@@ -25,10 +22,9 @@ export class CalculatorComponent implements OnInit {
 
   ngOnInit(): void {
     const history = JSON.parse(localStorage.getItem('history') || '[]');
-    console.log(history);
     this.queryHistory = history;
-    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
-    if (user !== 'true') {
+    const loggedIn = sessionStorage.getItem('logged');
+    if (loggedIn == null) {
       this.router.navigate(['/access-denied']);
     }
   }
@@ -48,28 +44,28 @@ export class CalculatorComponent implements OnInit {
     const legend: any = {
       '+': {
         pred: 2,
-        func: (a: any, b: any) => {
+        func: (a: number, b: number) => {
           return a + b;
         },
         assoc: 'left',
       },
       '-': {
         pred: 2,
-        func: (a: any, b: any) => {
+        func: (a: number, b: number) => {
           return a - b;
         },
         assoc: 'left',
       },
       '*': {
         pred: 3,
-        func: (a: any, b: any) => {
+        func: (a: number, b: number) => {
           return a * b;
         },
         assoc: 'left',
       },
       '/': {
         pred: 3,
-        func: (a: any, b: any) => {
+        func: (a: number, b: number) => {
           if (b != 0) {
             return a / b;
           } else {
@@ -80,7 +76,7 @@ export class CalculatorComponent implements OnInit {
       assoc: 'left',
       negate: {
         pred: 4,
-        func: (a: any) => {
+        func: (a: number) => {
           return -1 * a;
         },
         assoc: 'right',
@@ -152,7 +148,7 @@ export class CalculatorComponent implements OnInit {
       outputQueue.push(new Number(str));
     }
     outputQueue = outputQueue.concat(operations.reverse());
-    let res: any = [];
+    let res: any[] = [];
     while (outputQueue.length > 0) {
       let ch = outputQueue.shift();
       if (operators.includes(ch)) {

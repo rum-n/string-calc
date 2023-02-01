@@ -26,7 +26,7 @@ export class LoginComponent implements OnInit {
 
   onSubmit(): void {
     if (
-      this.loginForm.value.username === 'sasha' &&
+      this.loginForm.value.username === 'sascha' &&
       this.loginForm.value.password === 'elearnio'
     ) {
       sessionStorage.setItem('logged', 'true');
