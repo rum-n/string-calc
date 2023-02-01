@@ -29,8 +29,7 @@ export class LoginComponent implements OnInit {
       this.loginForm.value.username === 'sasha' &&
       this.loginForm.value.password === 'elearnio'
     ) {
-      const user = 'true';
-      sessionStorage.setItem('id', JSON.stringify(user));
+      sessionStorage.setItem('logged', 'true');
       this.router.navigate(['/calculator']);
     } else {
       this.wrongCredentials = true;
