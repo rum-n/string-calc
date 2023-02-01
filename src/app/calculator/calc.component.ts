@@ -1,8 +1,6 @@
-import { Component, OnInit, Output, EventEmitter, Input } from '@angular/core';
-// import { MatDialog } from '@angular/material/dialog';
-// import { DayDialogComponent } from './day-dialog/day-dialog.component';
-
-const DAY_MS = 60 * 60 * 24 * 1000;
+import { Component, OnInit } from '@angular/core';
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { Router } from '@angular/router';
 
 @Component({
   selector: 'app-calculator',
@@ -10,67 +8,178 @@ const DAY_MS = 60 * 60 * 24 * 1000;
   styleUrls: ['./calc.component.scss'],
 })
 export class CalculatorComponent implements OnInit {
-  // days = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
-  date = new Date();
-  @Output() selected = new EventEmitter();
+  queryHistory: any[] = [
+    { input: '21+4', result: 25 },
+    { input: '33+4', result: 37 },
+  ];
+  historyLimit = 10;
+  inputForm: FormGroup;
+  input = '';
+  result: number;
+  notValid = false;
 
-  constructor() {
-    // this.dates = this.getCalendarDays(this.date);
+  constructor(private formBuilder: FormBuilder, private router: Router) {
+    this.inputForm = this.formBuilder.group({ input: '' });
+    this.result = 0;
   }
 
-  ngOnInit(): void {}
+  ngOnInit(): void {
+    const history = JSON.parse(localStorage.getItem('history') || '[]');
+    console.log(history);
+    this.queryHistory = history;
+    const user = JSON.parse(sessionStorage.getItem('user') || '{}');
+    if (user !== 'true') {
+      this.router.navigate(['/access-denied']);
+    }
+  }
 
-  // openDialog() {
-  //   let dialogRef = this.dialog.open(DayDialogComponent, {
-  //     data: this.selectedDate,
-  //     panelClass: 'custom-modal'
-  //   })
+  onSubmit(): void {
+    this.calculate(this.input);
+  }
 
-  //   dialogRef.afterClosed().subscribe(res => {
-  //     // received data from dialog-component
-  //     if (res){
-  //       console.log(res.data)
-  //     }
-  //   })
-  // }
+  onClear(): void {
+    this.queryHistory = [];
+    localStorage.clear();
+  }
 
-  // setDate(date) {
-  //   this.selectedDate = date;
-  // }
+  calculate(expression: any) {
+    const digits = '0123456789.';
+    const operators = ['+', '-', '*', '/', 'negate'];
+    const legend: any = {
+      '+': {
+        pred: 2,
+        func: (a: any, b: any) => {
+          return a + b;
+        },
+        assoc: 'left',
+      },
+      '-': {
+        pred: 2,
+        func: (a: any, b: any) => {
+          return a - b;
+        },
+        assoc: 'left',
+      },
+      '*': {
+        pred: 3,
+        func: (a: any, b: any) => {
+          return a * b;
+        },
+        assoc: 'left',
+      },
+      '/': {
+        pred: 3,
+        func: (a: any, b: any) => {
+          if (b != 0) {
+            return a / b;
+          } else {
+            return 0;
+          }
+        },
+      },
+      assoc: 'left',
+      negate: {
+        pred: 4,
+        func: (a: any) => {
+          return -1 * a;
+        },
+        assoc: 'right',
+      },
+    };
+    expression = expression.replace(/\s/g, '');
+    let operations = [];
+    let outputQueue = [];
+    let ind = 0;
+    let str = '';
+    while (ind < expression.length) {
+      let ch = expression[ind];
+      if (operators.includes(ch)) {
+        if (str !== '') {
+          outputQueue.push(new Number(str));
+          str = '';
+        }
+        if (ch === '-') {
+          if (ind == 0) {
+            ch = 'negate';
+          } else {
+            let nextCh = expression[ind + 1];
+            let prevCh = expression[ind - 1];
+            if (
+              (digits.includes(nextCh) || nextCh === '(' || nextCh === '-') &&
+              (operators.includes(prevCh) || expression[ind - 1] === '(')
+            ) {
+              ch = 'negate';
+            }
+          }
+        }
+        if (operations.length > 0) {
+          let topOper = operations[operations.length - 1];
+          while (
+            operations.length > 0 &&
+            legend[topOper] &&
+            ((legend[ch].assoc === 'left' &&
+              legend[ch].pred <= legend[topOper].pred) ||
+              (legend[ch].assoc === 'right' &&
+                legend[ch].pred < legend[topOper].pred))
+          ) {
+            outputQueue.push(operations.pop());
+            topOper = operations[operations.length - 1];
+          }
+        }
+        operations.push(ch);
+      } else if (digits.includes(ch)) {
+        str += ch;
+      } else if (ch === '(') {
+        operations.push(ch);
+      } else if (ch === ')') {
+        if (str !== '') {
+          outputQueue.push(new Number(str));
+          str = '';
+        }
+        while (
+          operations.length > 0 &&
+          operations[operations.length - 1] !== '('
+        ) {
+          outputQueue.push(operations.pop());
+        }
+        if (operations.length > 0) {
+          operations.pop();
+        }
+      }
+      ind++;
+    }
+    if (str !== '') {
+      outputQueue.push(new Number(str));
+    }
+    outputQueue = outputQueue.concat(operations.reverse());
+    let res: any = [];
+    while (outputQueue.length > 0) {
+      let ch = outputQueue.shift();
+      if (operators.includes(ch)) {
+        let num1, num2, subResult;
+        if (ch === 'negate') {
+          res.push(legend[ch].func(res.pop()));
+        } else {
+          let [num2, num1] = [res.pop(), res.pop()];
+          res.push(legend[ch].func(num1, num2));
+        }
+      } else {
+        res.push(ch);
+      }
+    }
+    if (!res.length) {
+      this.notValid = true;
+      return;
+    }
+    this.result = res.pop().valueOf();
+    this.pushElement({ input: expression, result: this.result.toFixed(2) });
+  }
 
-  // setMonth(inc) {
-  //   const [year, month] = [this.date.getFullYear(), this.date.getMonth()];
-  //   this.date = new Date(year, month + inc, 1);
-  //   this.dates = this.getCalendarDays(this.date);
-  // }
-
-  // isToday() {
-  //   const today = new Date();
-  //   const dd = String(today.getDate()).padStart(2, '0');
-  //   return dd;
-  // }
-
-  // isSameMonth(date) {
-  //   return date.getMonth() === this.date.getMonth();
-  // }
-
-  // private getCalendarDays(date = new Date) {
-  //   const calendarStartTime =  this.getCalendarStartDay(date).getTime();
-
-  //   return this.range(0, 41)
-  //     .map(num => new Date(calendarStartTime + DAY_MS * num));
-  // }
-
-  // private getCalendarStartDay(date = new Date) {
-  //   const [year, month] = [date.getFullYear(), date.getMonth()];
-  //   const firstDayOfMonth = new Date(year, month, 1).getTime();
-
-  //   return this.range(1,7)
-  //     .map(num => new Date(firstDayOfMonth - DAY_MS * num))
-  //     .find(dt => dt.getDay() === 0)
-  // }
-
-  // private range(start, end, length = end - start + 1) {
-  //   return Array.from({ length }, (_, i) => start + i)
-  // }
+  pushElement(element: object) {
+    if (this.queryHistory.length > this.historyLimit) {
+      this.queryHistory.splice(0, 1);
+    }
+    this.queryHistory.push(element);
+    localStorage.setItem('history', JSON.stringify(this.queryHistory));
+  }
 }

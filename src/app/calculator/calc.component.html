@@ -1,13 +1,137 @@
-<!-- <div class='month-label'>
-  <button (click)="setMonth(-1)"><img src="../../assets/img/left.png"/></button>
-  {{date | date:'MMMM, y'}}
-  <button (click)="setMonth(+1)"><img src="../../assets/img/right.png"/></button>
+<!-- Left background shapes -->
+<div class="small-triangle">
+  <svg
+    width="80"
+    height="76"
+    viewBox="0 0 80 76"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M73.3142 1.35627C76.345 0.812014 78.8283 3.7527 77.7843 6.64951L54.2939 71.8277C53.2499 74.7245 49.4615 75.4049 47.4748 73.0523L2.77401 20.1199C0.787306 17.7674 2.09232 14.1464 5.12305 13.6021L73.3142 1.35627Z"
+      stroke="#47494e"
+      stroke-width="2"
+    />
+  </svg>
 </div>
-<ul>
-<li class="days" *ngFor="let day of days"> {{day}} </li>
-<li *ngFor="let date of dates"
-  [ngClass]="{grey: !isSameMonth(date)}"
-  (click)="setDate(date); openDialog()">
-  {{date | date:'d'}}
-</li>
-</ul> -->
+<div class="big-triangle">
+  <svg
+    width="123"
+    height="127"
+    viewBox="0 0 123 127"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M24.4316 5.11909C25.0178 2.0962 28.6566 0.841485 30.9814 2.8606L119.905 80.0916C122.23 82.1108 121.497 85.8894 118.586 86.8931L7.24004 125.288C4.32904 126.291 1.42306 123.767 2.00926 120.745L24.4316 5.11909Z"
+      stroke="#f5c451"
+      stroke-width="2"
+    />
+  </svg>
+</div>
+<div class="circle">
+  <svg
+    width="101"
+    height="101"
+    viewBox="0 0 101 101"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="50.4607"
+      cy="50.1013"
+      r="49"
+      stroke="#4b747e"
+      stroke-width="2"
+    />
+  </svg>
+</div>
+<!-- Calculator -->
+<div class="calc-wrapper">
+  <div class="user-input">
+    <form class="input-form" [formGroup]="inputForm" (ngSubmit)="onSubmit()">
+      <label for="input">Type in a mathematical expression</label>
+      <input
+        id="input"
+        type="text"
+        formControlName="input"
+        [(ngModel)]="input"
+      />
+      <span class="text-alert" *ngIf="notValid">
+        Not a valid mathematical expression.
+      </span>
+      <div class="result-view">
+        <p class="result-text">Result:</p>
+        <span class="result">{{ result }}</span>
+      </div>
+    </form>
+    <div class="history-toolbar">
+      <label class="prev-inputs-text">Previous results</label>
+      <button class="clear" (click)="onClear()">Clear history</button>
+    </div>
+    <div class="history-view">
+      <div *ngIf="queryHistory.length > 0">
+        <div
+          class="past-input-row"
+          *ngFor="let item of queryHistory.slice().reverse()"
+        >
+          <p class="past-input">
+            {{ item.input }}
+          </p>
+          <span>= {{ item.result }}</span>
+        </div>
+      </div>
+      <div *ngIf="queryHistory.length === 0">
+        <p class="no-data">No historical data</p>
+      </div>
+    </div>
+  </div>
+</div>
+<!-- Right background shapes -->
+<div class="small-triangle-right">
+  <svg
+    width="80"
+    height="76"
+    viewBox="0 0 80 76"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M73.3142 1.35627C76.345 0.812014 78.8283 3.7527 77.7843 6.64951L54.2939 71.8277C53.2499 74.7245 49.4615 75.4049 47.4748 73.0523L2.77401 20.1199C0.787306 17.7674 2.09232 14.1464 5.12305 13.6021L73.3142 1.35627Z"
+      stroke="#47494e"
+      stroke-width="2"
+    />
+  </svg>
+</div>
+<div class="big-triangle-right">
+  <svg
+    width="123"
+    height="127"
+    viewBox="0 0 123 127"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <path
+      d="M24.4316 5.11909C25.0178 2.0962 28.6566 0.841485 30.9814 2.8606L119.905 80.0916C122.23 82.1108 121.497 85.8894 118.586 86.8931L7.24004 125.288C4.32904 126.291 1.42306 123.767 2.00926 120.745L24.4316 5.11909Z"
+      stroke="#f5c451"
+      stroke-width="2"
+    />
+  </svg>
+</div>
+<div class="circle-right">
+  <svg
+    width="101"
+    height="101"
+    viewBox="0 0 101 101"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle
+      cx="50.4607"
+      cy="50.1013"
+      r="49"
+      stroke="#4b747e"
+      stroke-width="2"
+    />
+  </svg>
+</div>
